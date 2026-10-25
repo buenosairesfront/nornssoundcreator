@@ -16,8 +16,8 @@ Norns Sound Creator está traducido a seis idiomas:
 En este orden de prioridad:
 
 1. **Parámetro de URL** `?lang=xx`, por ejemplo `index.html?lang=zh`. Sirve para enlazar a un idioma concreto desde la landing de Buenos Aires Front u otro sitio. También queda guardado como preferencia.
-2. **Preferencia guardada**: lo último que se eligió en ⚙ → Idioma (se guarda en `localStorage`, clave `nsc.settings`).
-3. **Idioma del navegador** (`navigator.language`), si es uno de los seis.
+2. **Preferencia guardada**: lo último que se eligió con el botón **LANG** (se guarda en `localStorage`, clave `nsc.lang`).
+3. **Español**, si no hay nada de lo anterior.
 4. **Español** como valor por defecto.
 
 ## Qué se traduce

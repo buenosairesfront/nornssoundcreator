@@ -45,7 +45,7 @@ La guía completa está en [`docs/GUIA.md`](docs/GUIA.md).
 
 ## Idiomas
 
-La app detecta el idioma del navegador. También se puede elegir desde ⚙ o forzar con la URL:
+La app abre en español. Se puede elegir otro idioma con el botón **LANG** o forzarlo con la URL:
 
 | Idioma | Enlace |
 |---|---|

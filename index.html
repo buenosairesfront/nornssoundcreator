@@ -210,6 +210,7 @@ pre{background:#050505; color:#DADAD5; font:12px/1.45 var(--mono); padding:10px;
 .menu[hidden]{display:none}
 .menu .in{display:flex; flex-direction:column; gap:6px}
 .menu select{width:100%}
+.iconbtn.lang{width:auto; min-width:44px; padding:0 6px; font-size:11px; font-weight:700; letter-spacing:.06em}
 .tip{font-size:11px; color:var(--paperMute); margin:6px 2px 0}
 @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important} }
 
@@ -1372,9 +1373,9 @@ const pad2=n=>String(n).padStart(2,'0');
 const LANGS=['es','en','de','zh','ja','hi'];
 const LANG_NAMES={es:'Español',en:'English',de:'Deutsch',zh:'中文',ja:'日本語',hi:'हिन्दी'};
 const urlLang=(()=>{ try{ const q=(new URLSearchParams(location.search).get('lang')||'').slice(0,2).toLowerCase(); return LANGS.includes(q)?q:null; }catch(e){ return null; } })();
-const navLang=(()=>{ try{ const n=(navigator.language||'').slice(0,2).toLowerCase(); return LANGS.includes(n)?n:'es'; }catch(e){ return 'es'; } })();
-const S=Object.assign({lang:navLang,theme:'system',scope:'osc',lib:'norns',lua:'hi',files:'both',bpm:110,oct:3,buf:512},store.get('nsc.settings',{}));
-if(urlLang) S.lang=urlLang;
+const S=Object.assign({theme:'system',scope:'osc',lib:'norns',lua:'hi',files:'both',bpm:110,oct:3,buf:512},store.get('nsc.settings',{}));
+if(urlLang) store.set('nsc.lang',urlLang);
+S.lang=urlLang||store.get('nsc.lang','es');
 if(!LANGS.includes(S.lang)) S.lang='es';
 const saveS=()=>store.set('nsc.settings',S);
 const t=k=>(I18N[S.lang]&&I18N[S.lang][k])||I18N.es[k]||k;
@@ -1480,17 +1481,18 @@ const logoString=()=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 2
 function renderTop(){
   const top=$('#top'); top.innerHTML='';
   const menu=h('div',{class:'menu panel p-paper',hidden:true,id:'menu'},h('div',{class:'in'},
-    h('div',{class:'lbl'},t('lang')),
-    (()=>{ const s=h('select',{class:'btn','aria-label':t('lang'),onchange:e=>{ S.lang=e.target.value; saveS(); applyTheme(); renderAll(); }}); LANGS.map(k=>[k,LANG_NAMES[k]]).forEach(([v,l])=>s.append(h('option',{value:v,selected:S.lang===v},l))); return s; })(),
     h('div',{class:'lbl'},t('theme')),
     seg([['system',t('th_sys')],['light',t('th_light')],['dark',t('th_dark')]],S.theme,v=>{ S.theme=v; saveS(); applyTheme(); drawEnv(); }),
     h('div',{class:'lbl'},t('engine')), h('div',{class:'note',id:'enginfo',style:'margin:0'},engInfo()),
     h('div',{class:'lbl'},t('buffer')+' ('+t('engCompat')+')'), seg([[256,'256'],[512,'512'],[1024,'1024']],S.buf,v=>{ S.buf=v; saveS(); toast(t('buffer')+' '+v+' → reload'); })));
   menu.addEventListener('toggle',()=>{});
+  const lmenu=h('div',{class:'menu panel p-paper',hidden:true,id:'langmenu'},h('div',{class:'in'},
+    ...LANGS.map(k=>h('button',{class:'btn',type:'button','aria-pressed':String(S.lang===k),onclick:()=>{ S.lang=k; store.set('nsc.lang',k); saveS(); applyTheme(); renderAll(); }},LANG_NAMES[k]))));
   top.append(h('div',{class:'bar'}, logoSVG('logo'), h('div',{class:'title'},h('b',null,'Norns Sound Creator'),h('small',null,h('span',null,'INTERFACE V2.0'),h('span',{id:'pname'},curName()))),
     h('button',{class:'iconbtn',id:'undo',type:'button',onclick:undo,'aria-label':t('undo'),title:t('undo')},'↶'),
     h('button',{class:'iconbtn',id:'redo',type:'button',onclick:redo,'aria-label':t('redo'),title:t('redo')},'↷'),
-    h('button',{class:'iconbtn',type:'button','aria-label':t('lang')+' / '+t('theme'),onclick:()=>{ menu.hidden=!menu.hidden; const ei=$('#enginfo'); if(ei) ei.textContent=engInfo(); }},'⚙'), menu));
+    h('button',{class:'iconbtn lang',type:'button','aria-label':t('lang'),onclick:()=>{ lmenu.hidden=!lmenu.hidden; menu.hidden=true; }},'LANG'),
+    h('button',{class:'iconbtn',type:'button','aria-label':t('theme'),onclick:()=>{ menu.hidden=!menu.hidden; lmenu.hidden=true; const ei=$('#enginfo'); if(ei) ei.textContent=engInfo(); }},'⚙'), menu, lmenu));
   const cv=h('canvas',{id:'scope','aria-label':t('scope')});
   const ro=(k,id)=>h('div',null,h('span',null,t(k)),h('b',{id},'—'));
   top.append(h('div',{class:'panel p-ink scopecard'},h('div',{class:'in'},
@@ -1871,7 +1873,7 @@ function boot(){
   const main=$('#main');
   Object.keys(SECT).forEach(id=>main.append(h('section',{id,class:'panel '+SECT[id][1]})));
   renderAll(); requestAnimationFrame(drawScope);
-  document.addEventListener('pointerdown',e=>{ const mm=$('#menu'); if(mm&&!mm.hidden&&!e.target.closest('#menu')&&!e.target.closest('.iconbtn')) mm.hidden=true; });
+  document.addEventListener('pointerdown',e=>{ ['#menu','#langmenu'].forEach(id=>{ const mm=$(id); if(mm&&!mm.hidden&&!e.target.closest(id)&&!e.target.closest('.iconbtn')) mm.hidden=true; }); });
   addEventListener('resize',()=>drawEnv());
   if(document.fonts) document.fonts.ready.then(()=>drawEnv());
   (async()=>{ try{ if(window.claude&&window.claude.use){ dl=await window.claude.use('downloads'); } }catch(e){ dl=null; } })();
