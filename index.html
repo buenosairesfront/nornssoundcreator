@@ -127,6 +127,8 @@ input[type=range]::-moz-range-thumb{width:9px; height:19px; background:var(--pb)
 .li.on{background:var(--pa); border-color:var(--pa)}
 .li.on .add,.li.on .play{color:var(--pat)}
 .li.on .play{border-left-color:var(--pat)}
+.li .rm{display:none; border:0; border-left:1.5px solid var(--pat); background:transparent; width:32px; flex:none; font-size:16px; color:var(--pat)}
+.li.on .rm{display:block}
 .cnt{flex:none; font:700 11px/1 var(--mono); padding:3px 5px; background:var(--pat); color:var(--pa); display:none}
 .li.on .cnt{display:inline-block}
 .bdg{flex:none; font:700 11px/1 var(--mono); width:18px; height:18px; display:grid; place-items:center; border:1.5px solid currentColor}
@@ -1525,6 +1527,7 @@ function renderLib(){
     SRC.filter(r=> s? r[2].toLowerCase().includes(s) : r[1]===S.lib).forEach(r=>{ const key=r[0], m=SRCMAP[key];
       const item=h('div',{class:'li','data-src':key},
         h('button',{class:'add',type:'button',title:m.label,'aria-pressed':'false',onclick:()=>addChannel(key)},badge(m.badge),h('span',{class:'t'},m.label),h('span',{class:'cnt'},'')),
+        h('button',{class:'rm',type:'button','aria-label':t('remove')+' '+m.label,title:t('remove'),onclick:()=>removeChannel(key)},'×'),
         h('button',{class:'play',type:'button','aria-label':'▶ '+m.label,onclick:()=>play({type:'aud',src:key,p:0.5})},'▶'));
       grid.append(item); }); updLibStates(); }
   q.addEventListener('input',fill);
@@ -1533,6 +1536,7 @@ function renderLib(){
 }
 function updLibStates(){ const cnt={}; P.channels.forEach(c=>cnt[c.src]=(cnt[c.src]||0)+1);
   document.querySelectorAll('#libgrid .li').forEach(li=>{ const n=cnt[li.dataset.src]||0; li.classList.toggle('on',n>0); li.querySelector('.add').setAttribute('aria-pressed',String(n>0)); li.querySelector('.cnt').textContent='×'+n; }); }
+function removeChannel(key){ const i=P.channels.map(c=>c.src).lastIndexOf(key); if(i<0) return; P.channels.splice(i,1); renderMixer(); updLibStates(); changed(); }
 function addChannel(key){ if(P.channels.length>=12){ toast(t('maxCh')); return; } ensureAudio(); P.channels.push({id:uid(),src:key,level:P.channels.length>2?0.5:0.7,pan:0,mute:false,solo:false,tune:0,fine:0,p1:0.5}); renderMixer(); updLibStates(); changed(); const m=$('#mixrow'); if(m) m.scrollLeft=m.scrollWidth; }
 
 // ---------- mixer ----------
